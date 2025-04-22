@@ -1,0 +1,15 @@
+.fileList {
+    background-color: white;
+    padding: 15px;
+    border-radius: 25px;
+    height: 90vh;
+    overflow-y: scroll;
+    scrollbar-color: #c1c1c1 white;
+  
+    &_grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      grid-gap: 15px;
+      justify-items: center;
+    }
+  }

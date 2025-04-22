@@ -6,49 +6,16 @@ import { Sidebar } from './components/Sidebar';
 import { FileList } from './components/FileList/FileList';
 import { Header } from './components/Header';
 import { Downloads } from './components/Downloads';
+import { useDispatch, useSelector } from 'react-redux';
+import { getListItem } from './components/FileList/fileItemSlice';
 
 function App() {
-	const [fileUpload, setFileUpload] = useState<File | null>(null);
+
 	const [imageList, setImageList] = useState<Array<object>>([]);
-	const [isFileLoading, setIsFileLoading] = useState<boolean>(false)
-	const [uploadProgress, setUploadProgress] = useState<number>(0);
-
-	const onFileChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-		if (!e.target.files) return;
-		setFileUpload(e.target.files[0])
-	}
-
 
 	const imageListRef = ref(storage, 'images/');
 
-	const uploadFile = () => {
-		if (fileUpload == null) return;
-
-		const imageRef = ref(storage, `images/${fileUpload.name}`);
-
-		const uploadTask = uploadBytesResumable(imageRef, fileUpload)
-
-		uploadTask.on('state_changed', (snapshot) => {
-			let data = snapshot.metadata
-			console.log(data)
-			const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-			setUploadProgress(progress)
-			setIsFileLoading(true)
-
-			if (progress === 100) {
-				console.log(snapshot)
-				getDownloadURL(snapshot.ref).then((url) => {
-					let obj = {
-						url: url,
-						name: data.name,
-						date: data.timeCreated
-					}
-					setImageList((prev: Array<object>) => [...prev, obj])
-				})
-				setIsFileLoading(false)
-			}
-		})
-	};
+	const dispatch = useDispatch()
 
 	useEffect(() => {
 		listAll(imageListRef).then((response) => {
@@ -60,7 +27,8 @@ function App() {
 							name: metadataRes.name,
 							date: metadataRes.timeCreated
 						}
-						setImageList((prev: Array<object>) => [...prev, obj])
+						dispatch(getListItem(obj))
+						//setImageList((prev: Array<object>) => [...prev, obj])
 					})
 			})
 		})
@@ -70,16 +38,12 @@ function App() {
 		<div className='container'>
 			<Header />
 			<div className="main">
-				<Sidebar />
-				<FileList imageList={imageList} setImageList={setImageList} />
+				<Sidebar
+					setImageList
+				/>
+				<FileList setImageList={setImageList} />
 				<div className="info">
-					<input type="file" onChange={onFileChange} />
-					<button onClick={uploadFile} >Upload</button>
-					{fileUpload && <Downloads
-						uploadProgress={uploadProgress}
-						fileName={fileUpload!.name}
-						isFileLoading={isFileLoading}
-					/>}
+					info
 				</div>
 			</div>
 		</div>
